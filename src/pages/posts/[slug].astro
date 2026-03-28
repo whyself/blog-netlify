@@ -81,7 +81,7 @@ const articleJsonLd = {
   jsonLd={articleJsonLd}
 />
 <style>
-.article-body {
+  .article-body {
     --body-size: 1rem;
     --body-line: 1.72;
     --h1-size: clamp(1.5rem, 2.25vw, 1.86rem);
@@ -92,6 +92,12 @@ const articleJsonLd = {
     font-family: Newsreader, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Serif SC", serif;
     font-size: var(--body-size);
     line-height: var(--body-line);
+    min-width: 0;
+    overflow-x: hidden;
+  }
+  .article-body > * {
+    min-width: 0;
+    max-width: 100%;
   }
   .article-body :global(h1),
   .article-body :global(h2),
@@ -122,6 +128,8 @@ const articleJsonLd = {
   .article-body :global(td) {
     font-size: var(--body-size);
     line-height: var(--body-line);
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
   .article-body :global(blockquote) {
     font-size: 0.98rem;
@@ -158,6 +166,21 @@ const articleJsonLd = {
     padding: 1rem 1.1rem;
     margin: 1.25rem 0;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    max-width: 100%;
+    width: 100%;
+    overflow-x: auto !important;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
+  }
+  .article-body :global(pre.astro-code) {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  .article-body :global(.astro-code) {
+    max-width: 100%;
+    overflow-x: auto !important;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
   }
   .article-body :global(.md-image-shell) {
     position: relative;
@@ -205,18 +228,25 @@ const articleJsonLd = {
     background: transparent;
     border: none;
     border-radius: 0;
-    display: block;
+    display: inline-block;
     padding: 0;
-    overflow-x: auto;
+    overflow-x: visible;
+    max-width: 100%;
+    box-sizing: border-box;
+    min-width: 100%;
     box-shadow: none;
   }
   .article-body :global(.code-block-shell) {
     border: 1px solid #e5e7eb;
     border-radius: 0.7rem;
     background: #f8f9fb;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
     margin: 1.5rem 0;
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
   }
   .article-body :global(.code-block-head) {
     height: 2.25rem;
@@ -257,6 +287,17 @@ const articleJsonLd = {
     box-shadow: none;
     background: #f8f9fb;
     padding: 0.9rem 1rem 1rem;
+    max-width: 100%;
+    overflow-x: auto !important;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
+  }
+  .article-body :global(table) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
   html.dark body {
     background: #0b0d10;
@@ -294,13 +335,29 @@ const articleJsonLd = {
   html {
     scroll-behavior: smooth;
   }
+  @media (max-width: 768px) {
+    html, body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+    .article-body :global(pre.astro-code) {
+      width: min(100%, calc(100vw - 3rem)) !important;
+      max-width: min(100%, calc(100vw - 3rem)) !important;
+    }
+    .article-body :global(pre.astro-code code) {
+      white-space: pre;
+      display: block;
+      width: max-content;
+      min-width: max-content;
+    }
+  }
 </style>
 </head>
 <body class="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
 <TopActions searchItems={searchPosts} />
-<main class="w-full mb-8">
+<main class="w-full mb-8 overflow-x-hidden">
   <HeroBanner alt="Hero Header Image" base={base} />
-  <div class="max-w-screen-2xl mx-auto px-6 lg:px-12 mt-12 relative z-10" data-content-start>
+  <div class="max-w-screen-2xl mx-auto px-6 lg:px-12 mt-12 relative z-10 overflow-x-hidden" data-content-start>
     <nav class="mb-12">
       <a class="inline-flex items-center gap-2.5 font-headline font-bold text-sm uppercase tracking-[0.12em] text-primary hover:opacity-60 transition-opacity" href={base}>
         <Icon class="w-5 h-5" name="arrow_back" />
@@ -308,17 +365,17 @@ const articleJsonLd = {
       </a>
     </nav>
     <div class="flex flex-col lg:flex-row gap-8 xl:gap-10">
-      <article class="flex-1 max-w-4xl mx-auto lg:mx-0 bg-transparent p-0 md:p-0 shadow-none">
+      <article class="flex-1 min-w-0 max-w-4xl mx-auto lg:mx-0 bg-transparent p-0 md:p-0 shadow-none overflow-x-hidden">
         <header class="mb-10">
-          <h1 class="font-headline text-[1.75rem] md:text-[2.15rem] font-bold tracking-tight text-primary leading-tight mb-4">{title}</h1>
-          <div class="flex items-center gap-3 mb-5">
+          <h1 class="font-headline text-[1.75rem] md:text-[2.15rem] font-bold tracking-tight text-primary leading-tight mb-4 break-words">{title}</h1>
+          <div class="flex flex-wrap items-start gap-3 mb-5 max-w-full">
             <img alt="Author" class="w-6 h-6 rounded-full object-cover" decoding="async" height="24" loading="lazy" src={authorAvatar} width="24"/>
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="font-headline text-[11px] font-semibold tracking-wide text-primary">Written by {post.data.author}</span>
+            <div class="flex min-w-0 max-w-full flex-wrap items-center gap-2">
+              <span class="font-headline text-[11px] font-semibold tracking-wide text-primary break-words">Written by {post.data.author}</span>
               <span class="text-outline-variant">|</span>
-              <span class="font-headline text-[11px] tracking-wide text-on-surface-variant">{post.data.articleDate ?? post.data.listDate}</span>
+              <span class="font-headline text-[11px] tracking-wide text-on-surface-variant break-words">{post.data.articleDate ?? post.data.listDate}</span>
               {post.data.tags.map((tag) => (
-                <span class="px-3 py-1 bg-surface-container-high text-[10px] font-headline font-bold uppercase tracking-widest rounded-full">{tag}</span>
+                <span class="px-3 py-1 bg-surface-container-high text-[10px] font-headline font-bold uppercase tracking-widest rounded-full max-w-full break-words">{tag}</span>
               ))}
             </div>
           </div>
@@ -328,18 +385,16 @@ const articleJsonLd = {
           <Content />
         </div>
         {(previousPost || nextPost) && (
-          <nav class="mt-12 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between border-t border-outline-variant/20 pt-6 dark:border-zinc-700/50">
+          <nav class="mt-12 flex flex-col gap-3 border-t border-outline-variant/20 pt-6 dark:border-zinc-700/50">
             {previousPost ? (
-              <a class="group inline-flex items-center gap-1.5 text-sm font-headline text-on-surface-variant hover:text-primary transition-colors" href={`${base}posts/${previousPost.slug}/`}>
+              <a class="group inline-flex min-w-0 max-w-full items-center gap-1.5 text-sm font-headline text-on-surface-variant hover:text-primary transition-colors self-start" href={`${base}posts/${previousPost.slug}/`}>
                 <Icon class="w-[18px] h-[18px]" name="arrow_back" />
-                <span>上一篇: {previousPost.data.listTitle ?? previousPost.data.title}</span>
+                <span class="truncate">上一篇: {previousPost.data.listTitle ?? previousPost.data.title}</span>
               </a>
-            ) : (
-              <span></span>
-            )}
+            ) : null}
             {nextPost ? (
-              <a class="group inline-flex items-center gap-1.5 text-sm font-headline text-on-surface-variant hover:text-primary transition-colors sm:justify-end" href={`${base}posts/${nextPost.slug}/`}>
-                <span>下一篇: {nextPost.data.listTitle ?? nextPost.data.title}</span>
+              <a class="group inline-flex min-w-0 max-w-full items-center justify-end gap-1.5 text-right text-sm font-headline text-on-surface-variant hover:text-primary transition-colors self-end" href={`${base}posts/${nextPost.slug}/`}>
+                <span class="truncate">下一篇: {nextPost.data.listTitle ?? nextPost.data.title}</span>
                 <Icon class="w-[18px] h-[18px]" name="arrow_forward" />
               </a>
             ) : null}
@@ -470,6 +525,7 @@ const articleJsonLd = {
 
     const blocks = Array.from(document.querySelectorAll(".article-body pre"));
     blocks.forEach((pre) => {
+      if (pre.classList.contains("astro-code")) return;
       if (pre.parentElement?.classList.contains("code-block-shell")) return;
       const code = pre.querySelector("code");
       if (!code) return;
