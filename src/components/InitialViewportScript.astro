@@ -4,9 +4,10 @@ interface Props {
   offsetRatio?: number;
   behavior?: 'auto' | 'smooth';
   delayMs?: number;
+  durationMs?: number;
 }
 
-const { selector = '[data-content-start]', offsetRatio = 0.22, behavior = 'auto', delayMs = 0 } = Astro.props as Props;
+const { selector = '[data-content-start]', offsetRatio = 0.22, behavior = 'auto', delayMs = 0, durationMs = 600 } = Astro.props as Props;
 
 const script = `(() => {
   const contentStart = document.querySelector(${JSON.stringify(selector)});
@@ -20,7 +21,29 @@ const script = `(() => {
     const targetTop = Math.max(0, Math.round(contentTop - window.innerHeight * ${offsetRatio}));
     const prefersReducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const resolvedBehavior = prefersReducedMotion ? "auto" : ${JSON.stringify(behavior)};
-    window.scrollTo({ top: targetTop, behavior: resolvedBehavior });
+    if (resolvedBehavior !== "smooth") {
+      window.scrollTo({ top: targetTop, behavior: "auto" });
+      return;
+    }
+
+    const startTop = window.scrollY;
+    const delta = targetTop - startTop;
+    if (Math.abs(delta) < 2) return;
+    const duration = Math.max(0, ${durationMs});
+    if (duration <= 0) {
+      window.scrollTo({ top: targetTop, behavior: "auto" });
+      return;
+    }
+    const startTs = performance.now();
+    const easeInOutCubic = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+    const tick = (now) => {
+      const elapsed = now - startTs;
+      const progress = Math.min(1, elapsed / duration);
+      const eased = easeInOutCubic(progress);
+      window.scrollTo({ top: startTop + delta * eased, behavior: "auto" });
+      if (progress < 1) window.requestAnimationFrame(tick);
+    };
+    window.requestAnimationFrame(tick);
   };
 
   const scheduleInitialViewportPosition = () => {
