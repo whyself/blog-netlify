@@ -80,6 +80,8 @@ const darkLqip = "data:image/webp;base64,UklGRqIAAABXRUJQVlA4IJYAAABQBgCdASooABc
     const lqipLayer = document.querySelector("[data-hero-lqip]");
     if (!img) return;
 
+    let hasLoadedOnce = false;
+
     const applyHeroTheme = () => {
       const isDark = document.documentElement.classList.contains("dark");
       sources.forEach((source) => {
@@ -100,16 +102,22 @@ const darkLqip = "data:image/webp;base64,UklGRqIAAABXRUJQVlA4IJYAAABQBgCdASooABc
         lqipLayer.style.backgroundImage = `url('${lqipSrc}')`;
       }
       img.src = isDark ? img.dataset.fallbackDark || "" : img.dataset.fallbackLight || "";
-      img.classList.remove("opacity-100");
-      img.classList.add("opacity-0");
-      if (lqipLayer) {
-        lqipLayer.classList.remove("opacity-0");
-        lqipLayer.classList.add("opacity-100");
+
+      // Only show LQIP fade-in for the very first hero load.
+      // On theme switches, keep current image visible to avoid flash.
+      if (!hasLoadedOnce) {
+        img.classList.remove("opacity-100");
+        img.classList.add("opacity-0");
+        if (lqipLayer) {
+          lqipLayer.classList.remove("opacity-0");
+          lqipLayer.classList.add("opacity-100");
+        }
       }
     };
 
     img.classList.add("transition-opacity", "duration-500", "opacity-0");
     img.addEventListener("load", () => {
+      hasLoadedOnce = true;
       img.classList.remove("opacity-0");
       img.classList.add("opacity-100");
       if (lqipLayer) {
