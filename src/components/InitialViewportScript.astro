@@ -56,10 +56,10 @@ const script = `(() => {
     history.scrollRestoration = "manual";
   }
 
-  if (document.readyState === "complete") {
+  if (document.readyState !== "loading") {
     window.setTimeout(scheduleInitialViewportPosition, ${delayMs});
   } else {
-    window.addEventListener("load", () => {
+    window.addEventListener("DOMContentLoaded", () => {
       window.setTimeout(scheduleInitialViewportPosition, ${delayMs});
     }, { once: true });
   }
