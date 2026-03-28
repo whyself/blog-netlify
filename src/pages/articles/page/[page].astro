@@ -1,11 +1,12 @@
-﻿---
-import ArchiveMain from '../../components/ArchiveMain.astro';
-import PageHead from '../../components/PageHead.astro';
-import { buildSearchItems, getPublishedPosts, sortPostsByDateDesc } from '../../utils/posts';
+---
+import ArchiveMain from '../../../components/ArchiveMain.astro';
+import PageHead from '../../../components/PageHead.astro';
+import { buildSearchItems, getPublishedPosts, sortPostsByDateDesc } from '../../../utils/posts';
 
 export async function getStaticPaths() {
   const PAGE_SIZE = 10;
-  const posts = sortPostsByDateDesc(await getPublishedPosts());
+  const allPosts = sortPostsByDateDesc(await getPublishedPosts());
+  const posts = allPosts.filter((post) => post.data.majorCategory === 'Articles');
   const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
 
   return Array.from({ length: Math.max(0, totalPages - 1) }, (_, idx) => {
@@ -33,9 +34,9 @@ const base = import.meta.env.BASE_URL;
 const allPosts = sortPostsByDateDesc(await getPublishedPosts());
 const searchPosts = buildSearchItems(allPosts, base);
 const siteOrigin = Astro.site?.toString() ?? 'http://127.0.0.1:4321';
-const seoTitle = `Blog - Page ${currentPage} | whyself`;
-const seoDescription = `Blog archive page ${currentPage} on whyself.`;
-const canonicalUrl = new URL(`${base}page/${currentPage}/`, siteOrigin).toString();
+const seoTitle = `Articles - Page ${currentPage} | whyself`;
+const seoDescription = `Article archive page ${currentPage} on whyself.`;
+const canonicalUrl = new URL(`${base}articles/page/${currentPage}/`, siteOrigin).toString();
 const ogImageUrl = new URL(`${base}images/hero/blog-hero-light-1920.webp`, siteOrigin).toString();
 ---
 <!DOCTYPE html>
@@ -56,6 +57,5 @@ const ogImageUrl = new URL(`${base}images/hero/blog-hero-light-1920.webp`, siteO
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<ArchiveMain posts={posts} searchItems={searchPosts} base={base} currentPage={currentPage} totalPages={totalPages} majorRoute="all" />
+<ArchiveMain posts={posts} searchItems={searchPosts} base={base} currentPage={currentPage} totalPages={totalPages} majorRoute="articles" />
 </html>
-

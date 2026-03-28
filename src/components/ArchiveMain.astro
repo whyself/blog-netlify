@@ -10,16 +10,38 @@ import TopActions from './TopActions.astro';
 import { recommendedReads } from '../data/recommended-reads';
 import type { SearchItem } from '../utils/posts';
 
+type MajorRoute = 'all' | 'articles' | 'books' | 'shows-and-movies';
+
 interface Props {
   posts: CollectionEntry<'posts'>[];
   searchItems: SearchItem[];
   base: string;
   currentPage: number;
   totalPages: number;
+  majorRoute?: MajorRoute;
 }
 
-const { posts, searchItems, base, currentPage, totalPages } = Astro.props as Props;
-const pageHref = (page: number) => (page <= 1 ? base : `${base}page/${page}/`);
+const {
+  posts,
+  searchItems,
+  base,
+  currentPage,
+  totalPages,
+  majorRoute = 'all',
+} = Astro.props as Props;
+
+const routeRoot = majorRoute === 'all' ? base : `${base}${majorRoute}/`;
+const pageHref = (page: number) => (page <= 1 ? routeRoot : `${routeRoot}page/${page}/`);
+const navItems: Array<{ key: MajorRoute; label: string; href: string }> = [
+  { key: 'all', label: 'All Posts', href: base },
+  { key: 'articles', label: 'Articles', href: `${base}articles/` },
+  { key: 'books', label: 'Books', href: `${base}books/` },
+  { key: 'shows-and-movies', label: 'Shows and Movies', href: `${base}shows-and-movies/` },
+];
+const navClass = (active: boolean) =>
+  active
+    ? 'font-label font-bold text-xs uppercase tracking-widest text-primary border-b-2 border-primary pb-4 whitespace-nowrap'
+    : 'font-label font-bold text-xs uppercase tracking-widest text-outline hover:text-primary pb-4 transition-colors whitespace-nowrap';
 ---
 
 <body class="bg-surface text-on-surface selection:bg-primary-container selection:text-white">
@@ -34,10 +56,9 @@ const pageHref = (page: number) => (page <= 1 ? base : `${base}page/${page}/`);
 </div>
 <div class="mb-4 pb-2">
 <div class="flex space-x-10 overflow-x-auto no-scrollbar">
-<button class="font-label font-bold text-xs uppercase tracking-widest text-primary border-b-2 border-primary pb-4 whitespace-nowrap" data-major-filter="all" type="button">All Posts</button>
-<button class="font-label font-bold text-xs uppercase tracking-widest text-outline hover:text-primary pb-4 transition-colors whitespace-nowrap" data-major-filter="articles" type="button">Articles</button>
-<button class="font-label font-bold text-xs uppercase tracking-widest text-outline hover:text-primary pb-4 transition-colors whitespace-nowrap" data-major-filter="books" type="button">Books</button>
-<button class="font-label font-bold text-xs uppercase tracking-widest text-outline hover:text-primary pb-4 transition-colors whitespace-nowrap" data-major-filter="shows-and-movies" type="button">Shows and Movies</button>
+{navItems.map((item) => (
+  <a class={navClass(item.key === majorRoute)} href={item.href}>{item.label}</a>
+))}
 </div>
 </div>
 <nav class="mb-3 flex items-center justify-between pb-2">
@@ -68,10 +89,9 @@ const pageHref = (page: number) => (page <= 1 ? base : `${base}page/${page}/`);
 {posts.map((post) => {
   const detailHref = `${base}posts/${post.slug}/`;
   const title = post.data.listTitle ?? post.data.title;
-  const majorKey = post.data.majorCategory.toLowerCase().replaceAll(" ", "-");
   const tagData = post.data.tags.join("||");
   return (
-    <article class="group cursor-pointer" data-major={majorKey} data-post-card="" data-tags={tagData}>
+    <article class="group cursor-pointer" data-post-card="" data-tags={tagData}>
       {post.data.thumbnail ? (
         <div class="flex flex-col md:flex-row md:items-start gap-8">
           <div class="flex-1 space-y-4 order-2 md:order-1">
@@ -133,8 +153,7 @@ const pageHref = (page: number) => (page <= 1 ? base : `${base}page/${page}/`);
 </section>
 <aside class="w-full lg:w-[24rem] xl:w-[26rem] p-6 lg:pl-6 lg:pr-4 lg:pt-12 lg:pb-8 lg:sticky lg:top-16 lg:h-fit">
 <h4 class="font-headline font-black uppercase text-[10px] tracking-[0.3em] mb-8 text-on-surface">Categories</h4>
-<div class="flex flex-wrap gap-3" id="tag-filters">
-</div>
+<div class="flex flex-wrap gap-3" id="tag-filters"></div>
 <div class="mt-16">
 <h4 class="font-headline font-black uppercase text-[10px] tracking-[0.3em] mb-8 text-on-surface">Recent Reads</h4>
 <ul class="space-y-6 font-body italic text-lg text-on-surface-variant">
@@ -159,47 +178,29 @@ const pageHref = (page: number) => (page <= 1 ? base : `${base}page/${page}/`);
 <script is:inline>
   (() => {
     const cards = Array.from(document.querySelectorAll("[data-post-card]"));
-    const majorButtons = Array.from(document.querySelectorAll("[data-major-filter]"));
     const tagContainer = document.getElementById("tag-filters");
-    if (!cards.length || !majorButtons.length || !tagContainer) return;
+    if (!cards.length || !tagContainer) return;
 
     const tagSelectedClass = "px-5 py-2.5 bg-primary text-on-primary text-[10px] font-bold uppercase tracking-[0.15em] rounded-full shadow-sm";
     const tagUnselectedClass = "px-5 py-2.5 border border-surface-container-highest text-on-surface-variant hover:border-primary hover:text-primary transition-all text-[10px] font-bold uppercase tracking-[0.15em] rounded-full";
-    const state = { major: "all", tag: "all" };
+    const state = { tag: "all" };
 
     const getTags = (card) => (card.getAttribute("data-tags") || "").split("||").filter(Boolean);
-
-    const updateMajorButtons = () => {
-      majorButtons.forEach((btn) => {
-        const isActive = btn.dataset.majorFilter === state.major;
-        btn.classList.toggle("border-b-2", isActive);
-        btn.classList.toggle("border-primary", isActive);
-        btn.classList.toggle("text-primary", isActive);
-        btn.classList.toggle("text-outline", !isActive);
-      });
-    };
 
     const getAvailableTags = () => {
       const tagSet = new Set();
       cards.forEach((card) => {
-        const major = card.getAttribute("data-major");
-        if (state.major === "all" || major === state.major) {
-          getTags(card).forEach((tag) => tagSet.add(tag));
-        }
+        getTags(card).forEach((tag) => tagSet.add(tag));
       });
       return Array.from(tagSet).sort((a, b) => a.localeCompare(b));
     };
 
     const applyFilters = () => {
       cards.forEach((card) => {
-        const major = card.getAttribute("data-major");
         const tags = getTags(card);
-        const majorMatch = state.major === "all" || major === state.major;
         const tagMatch = state.tag === "all" || tags.includes(state.tag);
-        card.hidden = !(majorMatch && tagMatch);
+        card.hidden = !tagMatch;
       });
-
-      updateMajorButtons();
       renderTagButtons();
     };
 
@@ -224,14 +225,6 @@ const pageHref = (page: number) => (page <= 1 ? base : `${base}page/${page}/`);
       tagContainer.appendChild(buildTagButton("All", "all", state.tag === "all"));
       tags.forEach((tag) => tagContainer.appendChild(buildTagButton(tag, tag, state.tag === tag)));
     };
-
-    majorButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        state.major = btn.dataset.majorFilter || "all";
-        state.tag = "all";
-        applyFilters();
-      });
-    });
 
     applyFilters();
   })();

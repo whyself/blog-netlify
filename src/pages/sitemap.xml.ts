@@ -7,12 +7,16 @@ export const GET: APIRoute = async ({ site }) => {
   const basePath = import.meta.env.BASE_URL || '/';
   const siteOrigin = site?.toString() ?? 'http://127.0.0.1:4321';
   const urlFor = (path: string) => new URL(path, siteOrigin).toString();
+  const nowIso = new Date().toISOString();
 
   const staticEntries = [
-    { loc: urlFor(basePath), lastmod: new Date().toISOString() },
-    { loc: urlFor(`${basePath}about/`), lastmod: new Date().toISOString() },
-    { loc: urlFor(`${basePath}bio/`), lastmod: new Date().toISOString() },
-    { loc: urlFor(`${basePath}rss.xml`), lastmod: new Date().toISOString() },
+    { loc: urlFor(basePath), lastmod: nowIso },
+    { loc: urlFor(`${basePath}about/`), lastmod: nowIso },
+    { loc: urlFor(`${basePath}bio/`), lastmod: nowIso },
+    { loc: urlFor(`${basePath}articles/`), lastmod: nowIso },
+    { loc: urlFor(`${basePath}books/`), lastmod: nowIso },
+    { loc: urlFor(`${basePath}shows-and-movies/`), lastmod: nowIso },
+    { loc: urlFor(`${basePath}rss.xml`), lastmod: nowIso },
   ];
 
   const posts = sortPostsByDateDesc(await getCollection('posts', ({ data }) => !data.draft));
@@ -25,11 +29,32 @@ export const GET: APIRoute = async ({ site }) => {
   const pageEntries = totalPages > 1
     ? Array.from({ length: totalPages - 1 }, (_, idx) => ({
         loc: urlFor(`${basePath}page/${idx + 2}/`),
-        lastmod: posts[0]?.data.publishDate.toISOString() ?? new Date().toISOString(),
+        lastmod: posts[0]?.data.publishDate.toISOString() ?? nowIso,
       }))
     : [];
 
-  const allEntries = [...staticEntries, ...pageEntries, ...postEntries];
+  const categoryConfigs = [
+    { slug: 'articles', category: 'Articles' as const },
+    { slug: 'books', category: 'Books' as const },
+    { slug: 'shows-and-movies', category: 'Shows and Movies' as const },
+  ];
+
+  const categoryEntries = categoryConfigs.flatMap((config) => {
+    const categoryPosts = posts.filter((post) => post.data.majorCategory === config.category);
+    const categoryTotalPages = Math.max(1, Math.ceil(categoryPosts.length / PAGE_SIZE));
+    const entries = [];
+    if (categoryTotalPages > 1) {
+      for (let i = 2; i <= categoryTotalPages; i += 1) {
+        entries.push({
+          loc: urlFor(`${basePath}${config.slug}/page/${i}/`),
+          lastmod: categoryPosts[0]?.data.publishDate.toISOString() ?? nowIso,
+        });
+      }
+    }
+    return entries;
+  });
+
+  const allEntries = [...staticEntries, ...pageEntries, ...categoryEntries, ...postEntries];
   const urlset = allEntries
     .map(
       (entry) => `<url>
