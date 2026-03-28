@@ -1,7 +1,9 @@
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
+import { sortPostsByDateDesc } from '../utils/posts';
 
 export const GET: APIRoute = async ({ site }) => {
+  const PAGE_SIZE = 10;
   const basePath = import.meta.env.BASE_URL || '/';
   const siteOrigin = site?.toString() ?? 'http://127.0.0.1:4321';
   const urlFor = (path: string) => new URL(path, siteOrigin).toString();
@@ -13,13 +15,21 @@ export const GET: APIRoute = async ({ site }) => {
     { loc: urlFor(`${basePath}rss.xml`), lastmod: new Date().toISOString() },
   ];
 
-  const posts = await getCollection('posts', ({ data }) => !data.draft);
+  const posts = sortPostsByDateDesc(await getCollection('posts', ({ data }) => !data.draft));
+  const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
   const postEntries = posts.map((post) => ({
     loc: urlFor(`${basePath}posts/${post.slug}/`),
     lastmod: post.data.publishDate.toISOString(),
   }));
 
-  const allEntries = [...staticEntries, ...postEntries];
+  const pageEntries = totalPages > 1
+    ? Array.from({ length: totalPages - 1 }, (_, idx) => ({
+        loc: urlFor(`${basePath}page/${idx + 2}/`),
+        lastmod: posts[0]?.data.publishDate.toISOString() ?? new Date().toISOString(),
+      }))
+    : [];
+
+  const allEntries = [...staticEntries, ...pageEntries, ...postEntries];
   const urlset = allEntries
     .map(
       (entry) => `<url>
