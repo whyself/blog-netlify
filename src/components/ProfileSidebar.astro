@@ -8,12 +8,12 @@ const navClass = (key: string) =>
   }`;
 ---
 
-<aside class="w-full lg:w-80 p-8 lg:p-12 lg:sticky lg:top-16 lg:h-fit flex flex-col space-y-12">
-  <div class="flex flex-col space-y-6">
-    <div class="w-24 h-24 bg-surface-container-highest overflow-hidden rounded-sm">
+<aside class="w-full lg:w-80 p-8 lg:p-12 lg:sticky lg:top-16 lg:h-fit flex flex-col lg:space-y-12">
+  <div class="flex items-start gap-5 lg:flex-col lg:gap-6">
+    <div class="w-24 h-24 bg-surface-container-highest overflow-hidden rounded-sm shrink-0">
       <img alt="whyself" class="w-full h-full object-cover" decoding="async" height="96" loading="lazy" src={`${base}images/profile-avatar.jpg`} width="96" />
     </div>
-    <div>
+    <div class="min-w-0 flex-1">
       <h2 class="font-headline font-black uppercase text-sm tracking-widest text-on-surface">whyself</h2>
       <p class="font-body italic text-lg text-secondary">Racing with death.</p>
       <div class="mt-4 flex items-center gap-2 text-outline">
@@ -35,9 +35,14 @@ const navClass = (key: string) =>
           </svg>
         </a>
       </div>
+      <nav class="mt-5 flex flex-col gap-3 font-body italic text-lg lg:hidden">
+        <a class={navClass('home')} href={base}><span>Home</span></a>
+        <a class={navClass('bio')} href={`${base}bio/`}><span>Bio</span></a>
+        <a class={navClass('about')} href={`${base}about/`}><span>About</span></a>
+      </nav>
     </div>
   </div>
-  <nav class="flex flex-col space-y-6 font-body italic text-xl">
+  <nav class="hidden lg:flex flex-col space-y-6 font-body italic text-xl">
     <a class={navClass('home')} href={base}><span>Home</span></a>
     <a class={navClass('bio')} href={`${base}bio/`}><span>Bio</span></a>
     <a class={navClass('about')} href={`${base}about/`}><span>About</span></a>
