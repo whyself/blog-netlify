@@ -35,11 +35,11 @@ const script = `(() => {
       return;
     }
     const startTs = performance.now();
-    const easeInOutCubic = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+    const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
     const tick = (now) => {
       const elapsed = now - startTs;
       const progress = Math.min(1, elapsed / duration);
-      const eased = easeInOutCubic(progress);
+      const eased = easeOutCubic(progress);
       window.scrollTo({ top: startTop + delta * eased, behavior: "auto" });
       if (progress < 1) window.requestAnimationFrame(tick);
     };
