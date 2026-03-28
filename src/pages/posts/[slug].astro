@@ -205,6 +205,44 @@ const articleJsonLd = {
     margin: 1.25rem 0;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
   }
+  .article-body :global(.md-image-shell) {
+    position: relative;
+    width: 100%;
+    margin: 1.15rem 0;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    background: #eef2f6;
+    aspect-ratio: var(--md-image-ratio, 16 / 9);
+  }
+  .article-body :global(.md-image-lqip) {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    transform: scale(1.04);
+    filter: blur(14px);
+    opacity: 1;
+    transition: opacity 320ms ease;
+  }
+  .article-body :global(.md-image-shell img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    filter: blur(12px);
+    transform: scale(1.02);
+    transition: opacity 320ms ease, filter 320ms ease, transform 320ms ease;
+  }
+  .article-body :global(.md-image-shell.is-loaded img) {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+  .article-body :global(.md-image-shell.is-loaded .md-image-lqip) {
+    opacity: 0;
+  }
   .article-body :global(pre code) {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     font-size: 0.95rem;
@@ -308,6 +346,9 @@ const articleJsonLd = {
   html.dark .article-body :global(pre) {
     border-color: #373e47;
     box-shadow: none;
+  }
+  html.dark .article-body :global(.md-image-shell) {
+    background: #202731;
   }
   html.dark .article-body :global(p code),
   html.dark .article-body :global(li code),
@@ -443,6 +484,75 @@ const articleJsonLd = {
       }
       return "";
     };
+
+    const getPlaceholderDataUri = (seed) => {
+      let hash = 0;
+      for (let i = 0; i < seed.length; i += 1) {
+        hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0;
+      }
+      const hue = Math.abs(hash) % 360;
+      const hue2 = (hue + 35) % 360;
+      const dark = document.documentElement.classList.contains("dark");
+      const sat = dark ? 20 : 35;
+      const lightA = dark ? 20 : 84;
+      const lightB = dark ? 30 : 74;
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 16'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%' stop-color='hsl(${hue} ${sat}% ${lightA}%)'/><stop offset='100%' stop-color='hsl(${hue2} ${sat}% ${lightB}%)'/></linearGradient></defs><rect width='24' height='16' fill='url(#g)'/></svg>`;
+      return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+    };
+
+    const ensureImageShell = (img) => {
+      if (!(img instanceof HTMLImageElement)) return;
+      if (img.closest(".md-image-shell")) return;
+      const src = img.getAttribute("src") || "";
+      if (!src) return;
+
+      img.loading = "lazy";
+      img.decoding = "async";
+
+      const wrapper = document.createElement("span");
+      wrapper.className = "md-image-shell";
+      wrapper.style.setProperty("--md-image-ratio", "16 / 9");
+
+      if (img.width && img.height) {
+        wrapper.style.setProperty("--md-image-ratio", `${img.width} / ${img.height}`);
+      }
+
+      const placeholder = document.createElement("span");
+      placeholder.className = "md-image-lqip";
+      placeholder.style.backgroundImage = `url("${getPlaceholderDataUri(src)}")`;
+
+      const parent = img.parentNode;
+      if (!parent) return;
+      parent.insertBefore(wrapper, img);
+      wrapper.appendChild(placeholder);
+      wrapper.appendChild(img);
+
+      const onLoaded = () => {
+        const naturalW = img.naturalWidth || 0;
+        const naturalH = img.naturalHeight || 0;
+        if (naturalW > 0 && naturalH > 0) {
+          if (!img.getAttribute("width")) img.setAttribute("width", String(naturalW));
+          if (!img.getAttribute("height")) img.setAttribute("height", String(naturalH));
+          wrapper.style.setProperty("--md-image-ratio", `${naturalW} / ${naturalH}`);
+        }
+        wrapper.classList.add("is-loaded");
+      };
+
+      if (img.complete && img.naturalWidth > 0) {
+        onLoaded();
+      } else {
+        img.addEventListener("load", onLoaded, { once: true });
+        img.addEventListener("error", () => {
+          wrapper.classList.add("is-loaded");
+        }, { once: true });
+      }
+    };
+
+    const enhanceArticleImages = () => {
+      const articleImages = Array.from(document.querySelectorAll(".article-body img"));
+      articleImages.forEach((node) => ensureImageShell(node));
+    };
+    enhanceArticleImages();
 
     const blocks = Array.from(document.querySelectorAll(".article-body pre"));
     blocks.forEach((pre) => {
