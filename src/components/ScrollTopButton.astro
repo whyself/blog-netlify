@@ -1,4 +1,6 @@
 ---
+import Icon from './Icon.astro';
+
 const { threshold = 320, appearOffset = 180 } = Astro.props;
 ---
 
@@ -10,7 +12,7 @@ const { threshold = 320, appearOffset = 180 } = Astro.props;
   data-appear-offset={appearOffset}
   type="button"
 >
-  <span class="material-symbols-outlined text-[20px]" data-icon="arrow_upward">arrow_upward</span>
+  <Icon class="w-5 h-5" name="arrow_upward" />
 </button>
 
 <style>

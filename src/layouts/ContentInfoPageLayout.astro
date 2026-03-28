@@ -32,9 +32,6 @@ const {
   sectionTitle,
   subtitle,
 } = Astro.props as Props;
-
-const heroImageLight = `${base}images/blog-hero-light.png`;
-const heroImageDark = `${base}images/blog-hero-dark.png`;
 ---
 
 <!DOCTYPE html>
@@ -82,7 +79,7 @@ const heroImageDark = `${base}images/blog-hero-dark.png`;
 </head>
 <body class="bg-surface text-on-surface selection:bg-primary-container selection:text-white">
   <TopActions searchItems={searchItems} />
-  <HeroBanner lightImage={heroImageLight} darkImage={heroImageDark} title={heroTitle} />
+  <HeroBanner base={base} title={heroTitle} />
   <main class="max-w-screen-2xl mx-auto flex flex-col lg:flex-row min-h-screen" data-content-start>
     <ProfileSidebar active={activeNav} />
     <section class="flex-1 lg:-ml-16 lg:pl-0 lg:pr-0 py-8 md:py-12">

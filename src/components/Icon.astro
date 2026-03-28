@@ -1,0 +1,72 @@
+---
+interface Props {
+  name:
+    | 'search'
+    | 'dark_mode'
+    | 'light_mode'
+    | 'rss_feed'
+    | 'arrow_back'
+    | 'arrow_forward'
+    | 'arrow_upward'
+    | 'link'
+    | 'content_copy'
+    | 'check'
+    | 'error';
+  class?: string;
+}
+
+const { name, class: className = '' } = Astro.props as Props;
+---
+
+{
+  name === 'search' ? (
+    <svg aria-hidden="true" class={className} fill="none" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"></circle>
+      <path d="m20 20-3.5-3.5" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+    </svg>
+  ) : name === 'dark_mode' ? (
+    <svg aria-hidden="true" class={className} fill="none" viewBox="0 0 24 24">
+      <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+    </svg>
+  ) : name === 'light_mode' ? (
+    <svg aria-hidden="true" class={className} fill="none" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"></circle>
+      <path d="M12 2.5v2.3M12 19.2v2.3M4.8 4.8l1.6 1.6M17.6 17.6l1.6 1.6M2.5 12h2.3M19.2 12h2.3M4.8 19.2l1.6-1.6M17.6 6.4l1.6-1.6" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+    </svg>
+  ) : name === 'rss_feed' ? (
+    <svg aria-hidden="true" class={className} fill="none" viewBox="0 0 24 24">
+      <circle cx="6" cy="18" r="1.8" fill="currentColor"></circle>
+      <path d="M4.2 10.5a9.3 9.3 0 0 1 9.3 9.3M4 5.2A14.8 14.8 0 0 1 18.8 20" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+    </svg>
+  ) : name === 'arrow_back' ? (
+    <svg aria-hidden="true" class={className} fill="none" viewBox="0 0 24 24">
+      <path d="M5 12h14M5 12l5-5M5 12l5 5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+    </svg>
+  ) : name === 'arrow_forward' ? (
+    <svg aria-hidden="true" class={className} fill="none" viewBox="0 0 24 24">
+      <path d="M5 12h14M19 12l-5-5M19 12l-5 5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+    </svg>
+  ) : name === 'arrow_upward' ? (
+    <svg aria-hidden="true" class={className} fill="none" viewBox="0 0 24 24">
+      <path d="M12 19V6M12 6l-5 5M12 6l5 5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+    </svg>
+  ) : name === 'link' ? (
+    <svg aria-hidden="true" class={className} fill="none" viewBox="0 0 24 24">
+      <path d="m10 14 4-4M8.5 16.5l-1.6 1.6a3.3 3.3 0 1 1-4.7-4.7L5 10.6M15.5 7.5l1.6-1.6a3.3 3.3 0 1 1 4.7 4.7L19 13.4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+    </svg>
+  ) : name === 'content_copy' ? (
+    <svg aria-hidden="true" class={className} fill="none" viewBox="0 0 24 24">
+      <rect height="12" rx="1.8" stroke="currentColor" stroke-width="1.8" width="10.5" x="8.2" y="7.2"></rect>
+      <path d="M5.3 15.3H4.8a1.8 1.8 0 0 1-1.8-1.8V4.8A1.8 1.8 0 0 1 4.8 3h8.7a1.8 1.8 0 0 1 1.8 1.8v.5" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+    </svg>
+  ) : name === 'check' ? (
+    <svg aria-hidden="true" class={className} fill="none" viewBox="0 0 24 24">
+      <path d="m5 12 4.2 4.2L19 6.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+    </svg>
+  ) : (
+    <svg aria-hidden="true" class={className} fill="none" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"></circle>
+      <path d="M12 7.5v5.3M12 16h.01" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+    </svg>
+  )
+}

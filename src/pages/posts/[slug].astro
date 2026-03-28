@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import "katex/dist/katex.min.css";
 import HeroBanner from '../../components/HeroBanner.astro';
+import Icon from '../../components/Icon.astro';
 import InitialViewportScript from '../../components/InitialViewportScript.astro';
 import PageHead from '../../components/PageHead.astro';
 import ScrollTopButton from '../../components/ScrollTopButton.astro';
@@ -23,8 +24,6 @@ const currentPostIndex = allPosts.findIndex((entry) => entry.slug === post.slug)
 const previousPost = currentPostIndex > 0 ? allPosts[currentPostIndex - 1] : null;
 const nextPost = currentPostIndex >= 0 && currentPostIndex < allPosts.length - 1 ? allPosts[currentPostIndex + 1] : null;
 const title = post.data.title;
-const heroImageLight = `${base}images/blog-hero-light.png`;
-const heroImageDark = `${base}images/blog-hero-dark.png`;
 const authorAvatar = post.data.authorAvatar ?? `${base}images/profile-avatar.jpg`;
 const headingTocItems = (headings ?? []).filter((h) => h.depth >= 2 && h.depth <= 3);
 const fallbackTocItems = (post.data.toc ?? []).map((item) => ({
@@ -37,7 +36,7 @@ const siteOrigin = Astro.site?.toString() ?? 'http://127.0.0.1:4321';
 const seoTitle = `${title} | whyself`;
 const seoDescription = post.data.excerpt;
 const canonicalUrl = new URL(`${base}posts/${post.slug}/`, siteOrigin).toString();
-const rawOgImage = post.data.thumbnail ?? heroImageLight;
+const rawOgImage = post.data.thumbnail ?? `${base}images/hero/blog-hero-light-1920.webp`;
 const ogImageUrl = /^https?:\/\//.test(rawOgImage) ? rawOgImage : new URL(rawOgImage, siteOrigin).toString();
 const articleJsonLd = {
   "@context": "https://schema.org",
@@ -81,11 +80,6 @@ const articleJsonLd = {
   jsonLd={articleJsonLd}
 />
 <style>
-  .material-symbols-outlined {
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-    display: inline-block;
-    vertical-align: middle;
-  }
 .article-body {
     --body-size: 1rem;
     --body-line: 1.72;
@@ -350,11 +344,11 @@ const articleJsonLd = {
 <body class="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
 <TopActions searchItems={searchPosts} />
 <main class="w-full mb-8">
-  <HeroBanner alt="Hero Header Image" lightImage={heroImageLight} darkImage={heroImageDark} />
+  <HeroBanner alt="Hero Header Image" base={base} />
   <div class="max-w-screen-2xl mx-auto px-6 lg:px-12 mt-12 relative z-10" data-content-start>
     <nav class="mb-12">
       <a class="inline-flex items-center gap-2.5 font-headline font-bold text-sm uppercase tracking-[0.12em] text-primary hover:opacity-60 transition-opacity" href={base}>
-        <span class="material-symbols-outlined text-[20px]" data-icon="arrow_back">arrow_back</span>
+        <Icon class="w-5 h-5" name="arrow_back" />
         back to the list
       </a>
     </nav>
@@ -363,7 +357,7 @@ const articleJsonLd = {
         <header class="mb-10">
           <h1 class="font-headline text-[1.75rem] md:text-[2.15rem] font-bold tracking-tight text-primary leading-tight mb-4">{title}</h1>
           <div class="flex items-center gap-3 mb-5">
-            <img alt="Author" class="w-6 h-6 rounded-full object-cover" src={authorAvatar}/>
+            <img alt="Author" class="w-6 h-6 rounded-full object-cover" decoding="async" height="24" loading="lazy" src={authorAvatar} width="24"/>
             <div class="flex items-center gap-2 flex-wrap">
               <span class="font-headline text-[11px] font-semibold tracking-wide text-primary">Written by {post.data.author}</span>
               <span class="text-outline-variant">|</span>
@@ -382,7 +376,7 @@ const articleJsonLd = {
           <nav class="mt-12 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between border-t border-outline-variant/20 pt-6 dark:border-zinc-700/50">
             {previousPost ? (
               <a class="group inline-flex items-center gap-1.5 text-sm font-headline text-on-surface-variant hover:text-primary transition-colors" href={`${base}posts/${previousPost.slug}/`}>
-                <span class="material-symbols-outlined text-[18px]" data-icon="arrow_back">arrow_back</span>
+                <Icon class="w-[18px] h-[18px]" name="arrow_back" />
                 <span>上一篇: {previousPost.data.listTitle ?? previousPost.data.title}</span>
               </a>
             ) : (
@@ -391,7 +385,7 @@ const articleJsonLd = {
             {nextPost ? (
               <a class="group inline-flex items-center gap-1.5 text-sm font-headline text-on-surface-variant hover:text-primary transition-colors sm:justify-end" href={`${base}posts/${nextPost.slug}/`}>
                 <span>下一篇: {nextPost.data.listTitle ?? nextPost.data.title}</span>
-                <span class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+                <Icon class="w-[18px] h-[18px]" name="arrow_forward" />
               </a>
             ) : null}
           </nav>
@@ -418,7 +412,7 @@ const articleJsonLd = {
             <h4 class="font-headline text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-4">Share</h4>
             <div class="flex gap-2">
               <button aria-label="Copy link" class="w-8 h-8 flex items-center justify-center bg-surface-container-high hover:bg-primary hover:text-white transition-all" data-share-copy-link type="button">
-                <span class="material-symbols-outlined text-sm" data-icon="link">link</span>
+                <span data-share-copy-icon><Icon class="w-4 h-4" name="link" /></span>
               </button>
             </div>
           </div>
@@ -432,6 +426,23 @@ const articleJsonLd = {
 <script is:inline>
   (() => {
     const shareCopyButton = document.querySelector("[data-share-copy-link]");
+    const shareCopyIcon = document.querySelector("[data-share-copy-icon]");
+
+    const iconSvg = (name) => {
+      if (name === "content_copy") {
+        return '<svg aria-hidden="true" class="w-[14px] h-[14px]" fill="none" viewBox="0 0 24 24"><rect height="12" rx="1.8" stroke="currentColor" stroke-width="1.8" width="10.5" x="8.2" y="7.2"></rect><path d="M5.3 15.3H4.8a1.8 1.8 0 0 1-1.8-1.8V4.8A1.8 1.8 0 0 1 4.8 3h8.7a1.8 1.8 0 0 1 1.8 1.8v.5" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path></svg>';
+      }
+      if (name === "check") {
+        return '<svg aria-hidden="true" class="w-[14px] h-[14px]" fill="none" viewBox="0 0 24 24"><path d="m5 12 4.2 4.2L19 6.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>';
+      }
+      if (name === "error") {
+        return '<svg aria-hidden="true" class="w-[14px] h-[14px]" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"></circle><path d="M12 7.5v5.3M12 16h.01" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path></svg>';
+      }
+      if (name === "link") {
+        return '<svg aria-hidden="true" class="w-4 h-4" fill="none" viewBox="0 0 24 24"><path d="m10 14 4-4M8.5 16.5l-1.6 1.6a3.3 3.3 0 1 1-4.7-4.7L5 10.6M15.5 7.5l1.6-1.6a3.3 3.3 0 1 1 4.7 4.7L19 13.4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>';
+      }
+      return "";
+    };
 
     const blocks = Array.from(document.querySelectorAll(".article-body pre"));
     blocks.forEach((pre) => {
@@ -458,16 +469,16 @@ const articleJsonLd = {
       const copyBtn = document.createElement("button");
       copyBtn.type = "button";
       copyBtn.className = "code-block-copy";
-      copyBtn.innerHTML = "<span class='material-symbols-outlined' style='font-size:14px;line-height:1'>content_copy</span>";
+      copyBtn.innerHTML = iconSvg("content_copy");
       copyBtn.title = "Copy code";
       copyBtn.addEventListener("click", async () => {
         try {
           await navigator.clipboard.writeText(rawText);
-          copyBtn.innerHTML = "<span class='material-symbols-outlined' style='font-size:14px;line-height:1'>check</span>";
-          setTimeout(() => { copyBtn.innerHTML = "<span class='material-symbols-outlined' style='font-size:14px;line-height:1'>content_copy</span>"; }, 1200);
+          copyBtn.innerHTML = iconSvg("check");
+          setTimeout(() => { copyBtn.innerHTML = iconSvg("content_copy"); }, 1200);
         } catch {
-          copyBtn.innerHTML = "<span class='material-symbols-outlined' style='font-size:14px;line-height:1'>error</span>";
-          setTimeout(() => { copyBtn.innerHTML = "<span class='material-symbols-outlined' style='font-size:14px;line-height:1'>content_copy</span>"; }, 1200);
+          copyBtn.innerHTML = iconSvg("error");
+          setTimeout(() => { copyBtn.innerHTML = iconSvg("content_copy"); }, 1200);
         }
       });
 
@@ -480,16 +491,14 @@ const articleJsonLd = {
     });
 
     shareCopyButton?.addEventListener("click", async () => {
-      const icon = shareCopyButton.querySelector(".material-symbols-outlined");
-      const originalIcon = icon?.textContent || "link";
       const currentUrl = window.location.href;
 
       const setIcon = (nextIcon) => {
-        if (icon) icon.textContent = nextIcon;
+        if (shareCopyIcon) shareCopyIcon.innerHTML = iconSvg(nextIcon);
       };
 
       const resetIconLater = () => {
-        window.setTimeout(() => setIcon(originalIcon), 1200);
+        window.setTimeout(() => setIcon("link"), 1200);
       };
 
       try {

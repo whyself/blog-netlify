@@ -1,28 +1,61 @@
-﻿---
+---
 const {
-  image,
-  lightImage,
-  darkImage,
+  base = import.meta.env.BASE_URL,
   alt = "Hero background",
   title = "",
 } = Astro.props as {
-  image?: string;
-  lightImage?: string;
-  darkImage?: string;
+  base?: string;
   alt?: string;
   title?: string;
 };
+
+const lightAvifSet = `${base}images/hero/blog-hero-light-768.avif 768w, ${base}images/hero/blog-hero-light-1280.avif 1280w, ${base}images/hero/blog-hero-light-1920.avif 1920w`;
+const lightWebpSet = `${base}images/hero/blog-hero-light-768.webp 768w, ${base}images/hero/blog-hero-light-1280.webp 1280w, ${base}images/hero/blog-hero-light-1920.webp 1920w`;
+const darkAvifSet = `${base}images/hero/blog-hero-dark-768.avif 768w, ${base}images/hero/blog-hero-dark-1280.avif 1280w, ${base}images/hero/blog-hero-dark-1920.avif 1920w`;
+const darkWebpSet = `${base}images/hero/blog-hero-dark-768.webp 768w, ${base}images/hero/blog-hero-dark-1280.webp 1280w, ${base}images/hero/blog-hero-dark-1920.webp 1920w`;
+const transparentPixel = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+const lightLqip = "data:image/webp;base64,UklGRrwAAABXRUJQVlA4ILAAAABQBgCdASooABcAPt1an04opSKiNUwBEBuJbACsOUFVvkCKkBTtMdxmwDLOfhACGFmxX1uvOCvh7mXAAAD+VHLl3hmY7XoUpXmPrwcLYtU9BmLeX1iyW1fCVZ3SihpQV0i0kmLe4WTI3ujFXmu1X44bQ7X7mEGaqHsmwlfTEB4cOB4vZ7dcatFs3qg/k9XldTsd1zZzCoANlXDr6HUE47t7EwqqDPK663uoLkdWI76AAA==";
+const darkLqip = "data:image/webp;base64,UklGRqIAAABXRUJQVlA4IJYAAABQBgCdASooABcAPvVgqU6qpSOiMBqqqVAeiWIAp0d2xeALvfhKVM2cbuGHJPQ8NdiEQdEWKJuZQebpgAD3H9AGMKwVMcjgJqJOpHBmsPDXHjBLvGXx7LwOjb8pjDSkduUtFgtlrCMEQAhQI/wJ0Strse3+iNwElO/meMC5QAqJ9uu7/8bqlyj0YxOt1CBfA5v2eCwAAAA=";
 ---
 
 <section class="w-full relative overflow-visible bg-surface-dim" data-hero>
-  {lightImage && darkImage ? (
-    <>
-      <img alt={alt} class="w-full h-auto block dark:hidden" src={lightImage}/>
-      <img alt={alt} class="w-full h-auto hidden dark:block" src={darkImage}/>
-    </>
-  ) : (
-    <img alt={alt} class="w-full h-auto block" src={image}/>
-  )}
+  <div
+    class="absolute inset-0 bg-center bg-cover scale-105 blur-xl transition-opacity duration-500"
+    data-hero-lqip
+    data-lqip-dark={darkLqip}
+    data-lqip-light={lightLqip}
+    style={`background-image: url('${lightLqip}')`}
+  ></div>
+  <picture data-hero-picture>
+    <source
+      data-avif-dark={darkAvifSet}
+      data-avif-light={lightAvifSet}
+      sizes="100vw"
+      srcset={transparentPixel}
+      type="image/avif"
+    />
+    <source
+      data-webp-dark={darkWebpSet}
+      data-webp-light={lightWebpSet}
+      sizes="100vw"
+      srcset={transparentPixel}
+      type="image/webp"
+    />
+    <img
+      alt={alt}
+      class="w-full h-auto block"
+      data-fallback-dark={`${base}images/hero/blog-hero-dark-1280.webp`}
+      data-fallback-light={`${base}images/hero/blog-hero-light-1280.webp`}
+      decoding="async"
+      fetchpriority="high"
+      height="1536"
+      id="hero-main-image"
+      loading="eager"
+      sizes="100vw"
+      src={transparentPixel}
+      width="2722"
+    />
+  </picture>
   <div class="absolute inset-0 z-[1] bg-black/10"></div>
   <div class="absolute inset-x-0 bottom-0 z-[2] h-24 md:h-36 bg-gradient-to-t from-white/[0.88] via-white/[0.34] to-transparent dark:from-black/[0.76] dark:via-black/[0.38] dark:to-transparent"></div>
   <div class="absolute bottom-0 left-0 z-[3] w-full p-8 md:p-12">
@@ -36,3 +69,56 @@ const {
     )}
   </div>
 </section>
+
+<script is:inline>
+  (() => {
+    const picture = document.querySelector("[data-hero-picture]");
+    if (!picture) return;
+
+    const sources = Array.from(picture.querySelectorAll("source"));
+    const img = picture.querySelector("img");
+    const lqipLayer = document.querySelector("[data-hero-lqip]");
+    if (!img) return;
+
+    const applyHeroTheme = () => {
+      const isDark = document.documentElement.classList.contains("dark");
+      sources.forEach((source) => {
+        if (source.type === "image/avif") {
+          source.srcset = isDark
+            ? source.dataset.avifDark || ""
+            : source.dataset.avifLight || "";
+        } else if (source.type === "image/webp") {
+          source.srcset = isDark
+            ? source.dataset.webpDark || ""
+            : source.dataset.webpLight || "";
+        }
+      });
+      if (lqipLayer) {
+        const lqipSrc = isDark
+          ? lqipLayer.dataset.lqipDark || ""
+          : lqipLayer.dataset.lqipLight || "";
+        lqipLayer.style.backgroundImage = `url('${lqipSrc}')`;
+      }
+      img.src = isDark ? img.dataset.fallbackDark || "" : img.dataset.fallbackLight || "";
+      img.classList.remove("opacity-100");
+      img.classList.add("opacity-0");
+      if (lqipLayer) {
+        lqipLayer.classList.remove("opacity-0");
+        lqipLayer.classList.add("opacity-100");
+      }
+    };
+
+    img.classList.add("transition-opacity", "duration-500", "opacity-0");
+    img.addEventListener("load", () => {
+      img.classList.remove("opacity-0");
+      img.classList.add("opacity-100");
+      if (lqipLayer) {
+        lqipLayer.classList.remove("opacity-100");
+        lqipLayer.classList.add("opacity-0");
+      }
+    });
+
+    applyHeroTheme();
+    document.addEventListener("themechange", applyHeroTheme);
+  })();
+</script>

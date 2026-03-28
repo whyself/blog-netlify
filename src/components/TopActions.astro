@@ -1,4 +1,6 @@
-﻿---
+---
+import Icon from './Icon.astro';
+
 interface SearchItem {
   title: string;
   href: string;
@@ -14,7 +16,7 @@ const base = import.meta.env.BASE_URL;
   <div class="flex items-start space-x-4">
     <div class="relative">
       <button class="transition-opacity hover:opacity-70 flex items-center" id="header-search-toggle" type="button">
-        <span class="material-symbols-outlined text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]">search</span>
+        <Icon class="w-6 h-6 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]" name="search" />
       </button>
       <div class="hidden absolute right-0 md:right-[calc(100%+0.75rem)] top-[calc(100%+0.5rem)] md:top-1/2 md:-translate-y-1/2 w-[min(20rem,calc(100vw-2.5rem))] md:w-80 z-[130] opacity-0 pointer-events-none translate-x-2 transition-all duration-200 ease-out" id="header-search-panel">
         <div class="relative">
@@ -24,9 +26,11 @@ const base = import.meta.env.BASE_URL;
       </div>
     </div>
     <button aria-label="Toggle theme" class="transition-opacity hover:opacity-70 flex items-center" id="header-theme-toggle" type="button">
-      <span class="material-symbols-outlined text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]" id="header-theme-icon">dark_mode</span>
+      <Icon class="w-6 h-6 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]" name="dark_mode" />
     </button>
-    <a class="transition-opacity hover:opacity-70 flex items-center" href={`${base}rss.xml`} rel="noopener noreferrer" target="_blank" title="RSS Feed"><span class="material-symbols-outlined text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]">rss_feed</span></a>
+    <a class="transition-opacity hover:opacity-70 flex items-center" href={`${base}rss.xml`} rel="noopener noreferrer" target="_blank" title="RSS Feed">
+      <Icon class="w-6 h-6 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]" name="rss_feed" />
+    </a>
   </div>
 </header>
 
@@ -38,18 +42,23 @@ const base = import.meta.env.BASE_URL;
     const headerSearchInput = document.getElementById("header-search-input");
     const headerSearchResults = document.getElementById("header-search-results");
     const headerThemeToggle = document.getElementById("header-theme-toggle");
-    const headerThemeIcon = document.getElementById("header-theme-icon");
     if (!topActionsRoot || !headerSearchToggle || !headerSearchPanel || !headerSearchInput || !headerSearchResults) return;
+
+    const iconMarkup = {
+      dark_mode: '<svg aria-hidden="true" class="w-6 h-6 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]" fill="none" viewBox="0 0 24 24"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>',
+      light_mode: '<svg aria-hidden="true" class="w-6 h-6 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"></circle><path d="M12 2.5v2.3M12 19.2v2.3M4.8 4.8l1.6 1.6M17.6 17.6l1.6 1.6M2.5 12h2.3M19.2 12h2.3M4.8 19.2l1.6-1.6M17.6 6.4l1.6-1.6" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path></svg>',
+    };
 
     const applyTheme = (theme) => {
       const root = document.documentElement;
       root.classList.remove("light", "dark");
       root.classList.add(theme);
       root.dataset.theme = theme;
-      if (headerThemeIcon) headerThemeIcon.textContent = theme === "dark" ? "light_mode" : "dark_mode";
       if (headerThemeToggle) {
+        headerThemeToggle.innerHTML = theme === "dark" ? iconMarkup.light_mode : iconMarkup.dark_mode;
         headerThemeToggle.setAttribute("aria-label", theme === "dark" ? "Switch to light mode" : "Switch to dark mode");
       }
+      document.dispatchEvent(new Event("themechange"));
     };
 
     const getCurrentTheme = () => (document.documentElement.classList.contains("dark") ? "dark" : "light");

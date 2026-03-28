@@ -11,7 +11,7 @@ const navClass = (key: string) =>
 <aside class="w-full lg:w-80 p-8 lg:p-12 lg:sticky lg:top-16 lg:h-fit flex flex-col space-y-12">
   <div class="flex flex-col space-y-6">
     <div class="w-24 h-24 bg-surface-container-highest overflow-hidden rounded-sm">
-      <img alt="whyself" class="w-full h-full object-cover" src={`${base}images/profile-avatar.jpg`} />
+      <img alt="whyself" class="w-full h-full object-cover" decoding="async" height="96" loading="lazy" src={`${base}images/profile-avatar.jpg`} width="96" />
     </div>
     <div>
       <h2 class="font-headline font-black uppercase text-sm tracking-widest text-on-surface">whyself</h2>
